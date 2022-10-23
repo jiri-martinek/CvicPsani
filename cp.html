@@ -1,0 +1,338 @@
+<html>
+<header>
+<meta charset="UTF-8">
+</header>
+<body id='my'>
+
+
+<script language="javascript" type="text/javascript">
+<!--
+ //global vars
+ var mltrs = 123;
+ var ltrs = 1;
+ var usp = [0];
+ var previ = -1;
+ var psano = 0;
+ var chyb = 0;
+
+ var cudl = [' ','f','j','d','k','s','l','a','ů', 'g','h','r','u','e','i',',','o','.','p','t','y','ú','q', String.fromCharCode(13)
+    ,'v', 'm','c','x','w','-','z','b','n','ř','á','č','í','š','é','ě','ž','ý','ď','ť','ň','ó','+','=',String.fromCharCode(8)
+    ,'Y','U','I','O','P','H','J','K', 'L','N','M','Q','W','E','R','T','A','S','D','F','G','Z','X', 'C','V','B', 'Š','Ž','Ď','Ř'
+    ,'Ť','Č','Ě','Ň','Á','É','Ú','Í','Ó','Ý','?','!', '/','(',')','"','0','1','2','3','4','5','6','7','8','9','%', ':','_',';'
+    ,'§','@','#','$','^','&','*','\\', '|','<','>','\'','[',']'];
+
+ var cudp = ['▒','f','j','d','k','s','l','a','ů', 'g','h','r','u','e','i',',','o','.','p','t','y','ú','q','┘','v', 'm','c','x','w'
+    ,'-','z','b','n','ř','á','č','í','š','é','ě','ž', 'ý','ď','ť','ň','ó','+','=','←','Y','U','I','O','P','H','J','K', 'L','N','M'
+    ,'Q','W','E','R','T','A','S','D','F','G','Z','X', 'C','V','B', 'Š','Ž','Ď','Ř','Ť','Č','Ě','Ň','Á','É','Ú','Í','Ó','Ý','?','!'
+    , '/','(',')','"','0','1','2','3','4','5','6','7','8','9','%', ':','_',';','§','@','#','$','^','&','*','\\', '|','<','>','\'','[',']'];
+
+ var sndf = ["mezernik","f", "j", "d", "k", "s", "l", "a", "ur", "g","h","r","u","e","i","carka","o","tecka","p","t","y","uc","q","enter","v"
+    ,"m","c","x","w","minus","z","b","n","rh","ac","ch","ic","sh","ec","eh","zh", "yc","dh","th","nh","oc","plus","rovno","backspace","Y","U"
+    ,"I","O","P","H","J","K", "L","N","M","Q","W","E","R","T","A","S","D","F","G","Z","X", "C","V","B", "Sh","Zh","Dh","Rh","Th","Ch","Eh","Nh"
+    ,"Ac","Ec","Uc","Ic","Oc","Yc","otaznik","vykricnik", "lomeno","lzavorka","pzavorka","uvozovky","0","1","2","3","4","5","6","7","8","9"
+    ,"procento", "dvojtecka","podtrhnitko","strednik","paragraf","zavinac","krizek","dolar","striska","at","hvezdicka","zpetnelomeno","scara"
+    ,"mensi","vetsi","apostrof","lhzavorka","phzavorka"];
+
+  
+  //player definition
+  var saytext=[];
+  var audio = new Audio();
+  var plidx;
+  audio.loop = false;
+  audio.addEventListener('ended', function () {
+    plidx=plidx+1;
+    if(plidx< saytext.length){
+      audio.src = saytext[plidx];
+      audio.play();
+    };
+  }, false);
+
+function setCookie(cname, cvalue, exdays) {
+    var d = new Date();
+    d.setTime(d.getTime() + (exdays*24*60*60*1000));
+    var expires = "expires="+ d.toUTCString();
+    document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+}
+
+function getCookie(cname) {
+    var name = cname + "=";
+    var ca = document.cookie.split(';');
+    for(var i = 0; i <ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0)==' ') {
+            c = c.substring(1);
+        }
+        if (c.indexOf(name) == 0) {
+            return c.substring(name.length,c.length);
+        }
+    }
+    return "0";
+} 
+
+function Ohodnot(prev)
+{
+
+		var pind = 1; //index stisknuteho tlacitka;
+    var spravne = 1;
+		//nalezeni indexu stisknuteho tlacitka
+		pind = 1;
+		for (var i = 0; i < mltrs; i++){
+			if (cudl[i] == prev)
+			{
+				pind = i;
+			}
+		};
+
+		if (previ >= 0)
+		{ // stisknuto tlacitko
+			 psano += 1;
+			 if (cudl[previ] == prev)
+			 { //stisknuto spravne
+        var oaudio = new Audio('snd/klap.mp3');
+        oaudio.play();
+			  if (usp[previ] > 1)
+			  {
+				  usp[previ] -= 1;
+			  }; //ponizit vahu pismene
+			 }
+			else
+			{ //stisknuto spatne
+			  spravne = 0;
+			  usp[previ] += 3; //zvysit vahu pismene o trest
+			  chyb += 1;
+        var oaudio = new Audio('snd/pip.mp3');
+        oaudio.play();
+			};
+     document.getElementById("p3").innerHTML = "Stisknul: "+(cudp[pind]).toString(); //+"-"+ usp[previ].toString();		
+		}
+		else
+		{
+			usp[0] = 3;
+		}; //prvni beh
+    document.getElementById("p1").innerHTML ="&nbsp;";
+    return(spravne);
+}
+
+function Generuj(gnew)
+{
+    //najit nove pismeno
+    
+    var maxva; //maximalni nalezena vaha
+		var maxe; //soucet vsech pokynu vah - je li roven poctu pismen muzeme psat dalsi
+		var ind; //index maximalni nalezene vahy
+		var cuva; // vygenerovana vaha pro dane pismeno
+		var cuta; //limit generatoru pro dane pismeno
+		
+		maxva = 0;
+		maxe = 0;
+		ind = 0;
+    saytext=[];
+    
+		for (var i = 0; i < ltrs; i++)
+		{
+			if (usp[i] > 10)
+			{
+				cuta = 1700;
+			};
+			if (usp[i] > 5)
+			{
+				cuta = 1500;
+			};
+			if (usp[i] > 1)
+			{
+				cuta = 1200;
+			}
+			else
+			{
+				cuta = 1000;
+			};
+			cuva = Math.floor(Math.random()*cuta);
+			if (cuva > maxva)
+			{
+				ind = i;
+				maxva = cuva;
+			}
+			maxe += usp[i]; //vypocet souctu pokynu
+		}
+
+		if (gnew == 0)
+		{
+			ind = previ;
+		}; //ignoruj nove generovane pri chybnem stisku a zopakuj puvodni
+
+		document.getElementById("p4").innerHTML =  "Úhozů: " + (psano).toString() + "<br>Chyb: " + (chyb).toString() + "<br>Ověř: " + (maxe - ltrs).toString();
+              
+
+
+		if (maxe == ltrs)
+		{
+			if (ltrs < mltrs)
+			{
+				saytext.push('snd/novap.mp3');
+
+				  usp[ltrs] = 10;
+				  ind = ltrs;
+                                  document.getElementById('p2').value=ltrs;
+                                  setCookie('CvicPsaniIdx', ltrs, 200); 				  
+                                  ltrs += 1;                                  
+			};
+		};
+		previ = ind;
+		if (sndf[ind].charAt(0) >= 'A' && sndf[ind].charAt(0) <= 'Z')
+		{
+                saytext.push('snd/velke.mp3');
+		};
+                saytext.push("snd/" + sndf[ind].toLowerCase() + ".mp3");
+
+
+console.log(saytext);
+plidx = 0;
+audio.src = saytext[0];
+audio.play();
+document.getElementById("p1").innerHTML =cudp[ind];
+revent=false;
+		return ;
+}
+
+
+
+function getChar(event) {
+	  if (event.which == null) {
+	    return String.fromCharCode(event.keyCode) // IE
+	  } else {
+	    return String.fromCharCode(event.which) //null // special key
+	  }
+	}
+
+var kdown=false;
+var revent=false;
+
+document.getElementById('my').onkeyup = function () {
+    kdown = false;
+    if(document.getElementById("kp").value.length>2) document.getElementById("kp").value=" ";
+};
+
+
+function KeyInp(val){
+  if(kdown || revent) return;
+    kdown = true;
+    revent = true;
+
+  var pbut='' 
+  if(val.length==0){
+      pbut=String.fromCharCode(8);
+  };
+  if(val.length==1){
+      pbut=String.fromCharCode(13);
+  };
+    if(val.length>=2){
+    pbut=val.substr(1, 1);
+  };
+  document.getElementById("kp").value = " ";
+  document.getElementById("kp").focus(); //doesn't work
+  var generuj_nove=1;
+
+     generuj_nove=Ohodnot(pbut);
+    setTimeout(function(){
+        Generuj(generuj_nove);
+    }, 100);  
+ 
+
+return false;
+}
+
+
+function myKeyPress(e){
+    var keynum;
+
+    if(window.event) { // IE                    
+      keynum = e.keyCode;
+    } else if(e.which){ // Netscape/Firefox/Opera                   
+      keynum = e.which;
+    }
+ 
+    if(keynum+0==13) KeyInp(String.fromCharCode(13));
+   // if(document.getElementById("kp").value.length>2) KeyInp(document.getElementById("kp").value);
+
+  }
+
+
+function f_focus() {
+
+        document.getElementById("kp").focus();
+
+}
+
+
+function f_Initialization() {
+
+    f_resize()
+        
+    var sel = document.getElementById('p2');
+    for(var i = 0; i < cudp.length; i++) {
+        var opt = document.createElement('option');
+        opt.innerHTML = i+" ["+cudp[i]+"]";
+        opt.value = i;
+        sel.appendChild(opt);
+    }
+    f_onchange(getCookie('CvicPsaniIdx'));
+    
+}
+
+
+
+function f_onchange(sel_value) {
+           ltrs=parseInt(sel_value)+1;
+    	   if (ltrs > mltrs)
+    	   {
+    		   ltrs = mltrs;
+    	   };
+    	   for (var i = 0; i < ltrs; i++) {
+    		   usp[i] = 1;
+    	   };
+    	   usp[ltrs - 1] = 10; 
+      document.getElementById("kp").focus(); 
+      document.getElementById('p2').value=sel_value;  
+    };
+
+function f_resize() {
+
+    var w = window.innerWidth
+    || document.documentElement.clientWidth
+    || document.body.clientWidth;
+    
+    var h = window.innerHeight
+    || document.documentElement.clientHeight
+    || document.body.clientHeight;
+    
+    var fsiz=w/2
+    if (fsiz>h/1.3) fsiz=h/1.3
+    document.getElementById("p1").style.fontSize = fsiz
+    document.getElementById("p2").style.fontSize = fsiz/6
+    document.getElementById("p3").style.fontSize = fsiz/6
+    document.getElementById("p4").style.fontSize = fsiz/6
+    document.getElementById("kp").focus(); 
+}
+
+
+
+window.onload = f_Initialization;
+window.onresize=f_resize;
+
+
+//--> 
+</script>
+<table width=100% onload = f_Initialization();>
+<tr><td id='p1' width=50% onclick="f_focus()" style='text-align:center;border: 1px solid red;'>
+
+</td><td>
+<input size="1" MAXLENGTH="3" autofocus id="kp" value=" " type=text oninput="KeyInp(this.value)" onkeypress="return myKeyPress(event)" >
+<form><select id='p2' onchange='f_onchange(this.value)' >
+</select></form>
+<div id='p3' onclick="f_focus()">----</div><br>
+<div id='p4' onclick="f_focus()">----</div>
+</td>
+</tr>
+</table>
+</body>
+</html>
